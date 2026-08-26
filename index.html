@@ -461,8 +461,10 @@
 
   /* ---------- FOOTER ---------- */
   footer{
+    position:relative;
     padding:80px 0 46px;
     text-align:center;
+    overflow:hidden;
   }
   footer h2{font-size:clamp(1.8rem, 4vw, 2.6rem); margin-bottom:16px;}
   footer p{color:var(--smoke); margin-bottom:30px;}
@@ -470,6 +472,46 @@
   .socials a{opacity:.75; transition:opacity .2s, color .2s;}
   .socials a:hover{opacity:1; color:var(--neon-teal);}
   .fine-print{font-family:'BL Melody Mono', monospace; font-size:.7rem; color:rgba(243,234,216,.35); letter-spacing:.05em;}
+
+  /* ---------- FOOTER FLOATING GALLERY ---------- */
+  .gallery-photos{
+    position:absolute;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+  }
+  .gallery-photos .g-photo{
+    position:absolute;
+    top:var(--gy);
+    left:var(--gx);
+    width:var(--gs);
+    aspect-ratio:1;
+    border-radius:14px;
+    overflow:hidden;
+    border:1px solid var(--line);
+    box-shadow:0 18px 34px rgba(0,0,0,.55);
+    opacity:.5;
+    filter:saturate(1.1) brightness(.8);
+    animation:g-float var(--gd) ease-in-out infinite;
+    animation-delay:var(--gdelay);
+  }
+  .gallery-photos .g-photo img{width:100%; height:100%; object-fit:cover; display:block;}
+  @keyframes g-float{
+    0%, 100%{ transform:translate(0,0) rotate(var(--gr)); }
+    50%{ transform:translate(var(--gtx), var(--gty)) rotate(calc(var(--gr) * -1)); }
+  }
+  .footer-content{position:relative; z-index:1;}
+  .footer-content::before{
+    content:"";
+    position:absolute;
+    inset:-40px -24px;
+    z-index:-1;
+    background:radial-gradient(ellipse at center, rgba(13,9,6,.86) 0%, rgba(13,9,6,.55) 55%, rgba(13,9,6,0) 78%);
+  }
+  @media (max-width:640px){
+    .gallery-photos .g-photo{opacity:.3;}
+    .gallery-photos .g-photo:nth-child(n+6){display:none;}
+  }
 
   @media (prefers-reduced-motion: reduce){
     *{animation:none !important; transition:none !important;}
@@ -554,15 +596,18 @@
 
   <section id="contact" class="wrap">
     <footer>
-      <h2>Get Aftersunset for your night.</h2>
-      <p>Weddings · Sangeets · Corporate Events · Private Parties</p>
-      <a class="btn solid" href="mailto:connect.aftersunset01@gmail.com">connect.aftersunset01@gmail.com</a>
-      <div class="socials" style="margin-top:40px;">
-        <a href="https://www.instagram.com/_.aftersunset/" aria-label="Instagram" target="_blank" rel="noopener noreferrer">Instagram</a>
-        <a href="#" aria-label="YouTube">YouTube</a>
-        <a href="#" aria-label="Spotify">Spotify</a>
+      <div class="gallery-photos" id="galleryPhotos" aria-hidden="true"></div>
+      <div class="footer-content">
+        <h2>Get Aftersunset for your night.</h2>
+        <p>Weddings · Sangeets · Corporate Events · Private Parties</p>
+        <a class="btn solid" href="mailto:connect.aftersunset01@gmail.com">connect.aftersunset01@gmail.com</a>
+        <div class="socials" style="margin-top:40px;">
+          <a href="https://www.instagram.com/_.aftersunset/" aria-label="Instagram" target="_blank" rel="noopener noreferrer">Instagram</a>
+          <a href="#" aria-label="YouTube">YouTube</a>
+          <a href="#" aria-label="Spotify">Spotify</a>
+        </div>
+        <div class="fine-print">© <span id="year"></span> Aftersunset. All rights reserved.</div>
       </div>
-      <div class="fine-print">© <span id="year"></span> Aftersunset. All rights reserved.</div>
     </footer>
   </section>
 
@@ -626,6 +671,28 @@
       ${m.bio ? `<div class="band-bio">${m.bio}</div>` : ''}
     </div>
   `;
+  }).join('');
+
+  // ---- EDIT YOUR FOOTER GALLERY PHOTOS HERE ----
+  // add as many as you like — top/left are % positions within the footer
+  const galleryPhotos = [
+    { src:"assets/gallery/gig-1.jpg", top:"4%",  left:"3%",  size:130, rot:-7 },
+    { src:"assets/band/harshita.jpg", top:"10%", left:"80%", size:100, rot:6 },
+    { src:"assets/gallery/gig-2.jpg", top:"60%", left:"1%",  size:118, rot:5 },
+    { src:"assets/band/shreyas.jpg",  top:"64%", left:"85%", size:104, rot:-6 },
+    { src:"assets/gallery/gig-3.jpg", top:"0%",  left:"40%", size:96,  rot:4 },
+    { src:"assets/band/sunny.jpg",    top:"72%", left:"38%", size:88,  rot:-5 },
+    { src:"assets/band/atharva.jpg",  top:"38%", left:"90%", size:84,  rot:8 },
+  ];
+
+  const galleryEl = document.getElementById('galleryPhotos');
+  galleryEl.innerHTML = galleryPhotos.map((p, i) => {
+    const dur = (12 + (i % 5) * 2.3).toFixed(1);
+    const delay = (i * 0.9).toFixed(1);
+    const tx = (14 + (i % 3) * 6) * (i % 2 === 0 ? 1 : -1);
+    const ty = (16 + (i % 4) * 5) * (i % 2 === 0 ? -1 : 1);
+    const style = `--gx:${p.left}; --gy:${p.top}; --gs:${p.size}px; --gr:${p.rot}deg; --gd:${dur}s; --gdelay:${delay}s; --gtx:${tx}px; --gty:${ty}px;`;
+    return `<div class="g-photo" style="${style}"><img src="${p.src}" alt="" loading="lazy"></div>`;
   }).join('');
 
   // ---- Book cover page-turn animation ----
